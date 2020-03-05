@@ -5,6 +5,9 @@ import scipy.integrate as integrate
 #inputs(in pounds, inches)
 mtemp = 100
 xtemp = 200
+tempmassflow = 100
+freq = 20 #[Hz]
+flighttime = 90*60 #seconds
 #BEM
 mBEM = mtemp
 xBEM = xtemp
@@ -45,11 +48,17 @@ momentrampmass = momentZFM + momentfuelload
 mrampmass = mZFM + mfuelload
 xrampmass = momentrampmass / mrampmass
 
+massflow = tempmassflow
+usedfuel = 0
+tmeasure = [10, 180, 549, 782, 3650, 3777]
+mlocfuel = []
+xlocfuel = []
+momentlocfuel = []
+for i in range(flighttime):
+    usedfuel -= (tempmassflow / freq)
+    if i in tmeasure:
+        mlocfuel.append(mfuelload-usedfuel)
+        xlocfuel.append()
+        momentlocfuel.append()
+print(usedfuel)
 
-t0 = 0
-t1 = 1
-massflow = 3
-def integrand(massflow):
-    return massflow
-ans,err = integrate.quad(integrand,t0,t1)
-print(ans,err)
