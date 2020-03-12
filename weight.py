@@ -11,19 +11,20 @@ xtemp = 200
 inch = 0.0254
 lbs = 0.453592
 lbsinch = 0.113
+g = 9.80665
 
 #tempmassflow = 100
 #freq = 20 #[Hz]
 #flighttime = 90*60 #seconds
 #BEM
 mBEM = 9165*lbs
+#print(mBEM)
 xBEM = 291.65*inch
-momentBEM = mtemp * xtemp
+momentBEM = mBEM * xBEM
 #Payload
 #People
 
 mpax = [90,102,68,70,76,82,105,87,0,60]
-mpax = [i * lbs for i in mpax]
 xpax = [131,131,214,214,251,251,288,288,170,170]
 xpax = [i * inch for i in xpax]
 #seat 9 is empty
@@ -32,8 +33,8 @@ xpax = [i * inch for i in xpax]
 mnose, xnose = mtemp, 74
 maftcabin1, xaftcabin1 = mtemp, 321
 maftcabin2, xaftcabin2 = mtemp, 338
-mpax.extend((mnose,maftcabin1,maftcabin2))
-xpax.extend((xnose,xaftcabin1,xaftcabin2))
+#mpax.extend((mnose,maftcabin1,maftcabin2))
+#xpax.extend((xnose,xaftcabin1,xaftcabin2))
 
 #totalpayload
 
@@ -64,13 +65,9 @@ for i in range(len(wf)):
     mfuelload.append(mfuelloadstart - wf[i])
     for j in range(len(fuelmass)):
         if mfuelload[i]/lbs >= fuelmass[j] and mfuelload[i]/lbs <= fuelmass[j+1]:
-            print(mfuelload[i]/lbs,fuelmass[j],fuelmass[j+1])
-            fuelarm.append(interpolate(mfuelload[i]/lbs,fuelmass[j],fuelmass[j+1],fuelmoment[j],fuelmoment[j+1]))
-            print(fuelarm[i])
+            xfuelload.append(interpolate(mfuelload[i],fuelmass[j]*lbs,fuelmass[j+1]*lbs,fuelmoment[j]*lbsinch,fuelmoment[j+1]*lbsinch)/ mfuelload[i]/g)
 
-print(fuelarm)
-
-
+#print(xfuelload)
 #print(mfuelload)
 #print(wf)
 
@@ -80,3 +77,22 @@ print(fuelarm)
 #mrampmass = mZFM + mfuelload
 #xrampmass = momentrampmass / mrampmass
 
+#=================Calculation of mass and cg per measurement====================#
+
+cgloc = []
+mass = []
+def cg(mpax,xpax,mBEM,xBEM,xfuelload,mfuelload):
+    for i in range(len(mfuelload)):
+        momentsum = [mBEM*xBEM,mfuelload[i]*xfuelload[i]]
+        masssum = [mBEM,mfuelload[i]]
+        if i == 15:
+            xpax[6] = (171+131)/2*inch
+            print(xpax[6])
+        for j in range(len(mpax)):
+            #print(mpax,xpax)
+            momentsum.append(mpax[j]*xpax[j])
+            masssum.append(mpax[j])
+        mass.append(sum(masssum))
+        cgloc.append(sum(momentsum)/sum(masssum))
+    return mass, cgloc
+print(cg(mpax,xpax,mBEM,xBEM,xfuelload,mfuelload))
