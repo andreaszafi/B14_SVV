@@ -1,64 +1,82 @@
 import numpy as np
 import scipy.integrate as integrate
 
+def interpolate(mass,masslow,masshigh,armlow,armhigh):
+    return armlow + (mass-masslow)/(masshigh-masslow)*(armhigh-armlow)
+
 
 #inputs(in pounds, inches)
 mtemp = 100
 xtemp = 200
-tempmassflow = 100
-freq = 20 #[Hz]
-flighttime = 90*60 #seconds
-#BEM
-mBEM = mtemp
-xBEM = xtemp
-momentBEM = mtemp * xtemp
+inch = 0.0254
+lbs = 0.453592
+lbsinch = 0.113
 
+#tempmassflow = 100
+#freq = 20 #[Hz]
+#flighttime = 90*60 #seconds
+#BEM
+mBEM = 9165*lbs
+xBEM = 291.65*inch
+momentBEM = mtemp * xtemp
 #Payload
 #People
-mloc = [mtemp, mtemp,mtemp,mtemp,mtemp,mtemp,mtemp,mtemp,0,mtemp]
-xloc = [131,131,214,214,251,251,288,288,0,170]
+
+mpax = [90,102,68,70,76,82,105,87,0,60]
+mpax = [i * lbs for i in mpax]
+xpax = [131,131,214,214,251,251,288,288,170,170]
+xpax = [i * inch for i in xpax]
 #seat 9 is empty
 
 #Baggage
 mnose, xnose = mtemp, 74
 maftcabin1, xaftcabin1 = mtemp, 321
 maftcabin2, xaftcabin2 = mtemp, 338
-mloc.extend((mnose,maftcabin1,maftcabin2))
-xloc.extend((xnose,xaftcabin1,xaftcabin2))
+mpax.extend((mnose,maftcabin1,maftcabin2))
+xpax.extend((xnose,xaftcabin1,xaftcabin2))
 
 #totalpayload
 
 temppayloadmoment = []
-for i in range(len(mloc)):
-    temppayloadmoment.append(mloc[i]*xloc[i])
-mpayload = sum(mloc)
+for i in range(len(mpax)):
+    temppayloadmoment.append(mpax[i]*xpax[i])
+mpayload = sum(mpax)
 xpayload = sum(temppayloadmoment)/mpayload
 momentpayload = sum(temppayloadmoment)
-print(mpayload,xpayload)
+#print(mpayload,xpayload)
 #FUEL
+mfuelload = []
+fuelarm = []
+xfuelload = []
+fuelmass = [1700,1800,1900,2000,2100,2200,2300,2400]
+fuelmoment = [485656,514116,542564,570990,599404,627847,656282,684696]
 momentZFM = momentBEM + momentpayload
 mZFM = mBEM + mpayload
 xZFM = momentZFM / mZFM
-mfuelload = mtemp
-xfuelload = xtemp
-momentfuelload = mfuelload * xfuelload
+mfuelloadstart = 2628*lbs
+
+#momentfuelload = mfuelload * xf0
+wf = [286,462,497,543,569,590,612,692,710,727,746,798,814,843,873,905]
+wf = [i * lbs for i in wf]
+
+
+for i in range(len(wf)):
+    mfuelload.append(mfuelloadstart - wf[i])
+    for j in range(len(fuelmass)):
+        if mfuelload[i]/lbs >= fuelmass[j] and mfuelload[i]/lbs <= fuelmass[j+1]:
+            print(mfuelload[i]/lbs,fuelmass[j],fuelmass[j+1])
+            fuelarm.append(interpolate(mfuelload[i]/lbs,fuelmass[j],fuelmass[j+1],fuelmoment[j],fuelmoment[j+1]))
+            print(fuelarm[i])
+
+print(fuelarm)
+
+
+#print(mfuelload)
+#print(wf)
+
 
 #RAMP MASS
-momentrampmass = momentZFM + momentfuelload
-mrampmass = mZFM + mfuelload
-xrampmass = momentrampmass / mrampmass
-
-massflow = tempmassflow
-usedfuel = 0
-tmeasure = [10, 180, 549, 782, 3650, 3777]
-mlocfuel = []
-xlocfuel = []
-momentlocfuel = []
-for i in range(flighttime):
-    usedfuel -= (tempmassflow / freq)
-    if i in tmeasure:
-        mlocfuel.append(mfuelload-usedfuel)
-        xlocfuel.append()
-        momentlocfuel.append()
-print(usedfuel)
+#momentrampmass = momentZFM + momentfuelload
+#mrampmass = mZFM + mfuelload
+#xrampmass = momentrampmass / mrampmass
 
