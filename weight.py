@@ -11,7 +11,7 @@ xtemp = 200
 inch = 0.0254
 lbs = 0.453592
 lbsinch = 0.113
-g = 9.80665
+g = 9.81
 
 #tempmassflow = 100
 #freq = 20 #[Hz]
