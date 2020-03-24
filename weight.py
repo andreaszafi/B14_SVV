@@ -2,7 +2,7 @@ import numpy as np
 import scipy.integrate as integrate
 
 def interpolate(mass,masslow,masshigh,armlow,armhigh):
-    return armlow + (mass-masslow)/(masshigh-masslow)*(armhigh-armlow)
+    return moment + (mass-masslow)/(masshigh-masslow)*(armhigh-armlow)
 
 
 #inputs(in pounds, inches)
@@ -25,7 +25,6 @@ print(mBEM,momentBEM)
 #People
 
 mpax = [90,102,68,70,76,82,105,87,0,60]
-mpax = [x / lbs for x in mpax]
 print(mpax)
 xpax = [131,131,214,214,251,251,288,288,170,170]
 momentpax = []
@@ -63,7 +62,8 @@ for i in range(len(wf)):
     mfuelload.append(mfuelloadstart - wf[i])
     for j in range(len(fuelmass)):
         if mfuelload[i]/lbs >= fuelmass[j] and mfuelload[i]/lbs <= fuelmass[j+1]:
-            xfuelload.append(interpolate(mfuelload[i],fuelmass[j]*lbs,fuelmass[j+1]*lbs,fuelmoment[j]*lbsinch,fuelmoment[j+1]*lbsinch)/ mfuelload[i]/g)
+            xfuelload.append(interpolate(mfuelload[i],fuelmass[j]*lbs,fuelmass[j+1]*lbs,fuelmoment[j]*\
+                                         lbsinch,fuelmoment[j+1]*lbsinch)/ mfuelload[i]/g)
             momentfuelload.append(mfuelload[i] * 9.81 * xfuelload[i])
 
 print("fuel mass in kg:", mfuelload)
@@ -90,7 +90,7 @@ def cg(mpax,xpax,mBEM,xBEM,xfuelload,mfuelload):
         totalmoment[j] += mfuelload[j]*xfuelload[j]*9.81
         print("totalmomentj: ", totalmoment)
         cgloc.append(totalmoment[j]/9.81/masssum[j])
-    return masssum,"momentsum",totalmoment,"cg",cgloc
+    return "sum of masses: ",masssum,"sum of moments: ",totalmoment,"cg",cgloc
 
 
 print(cg(mpax,xpax,mBEM,xBEM,xfuelload,mfuelload))
