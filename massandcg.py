@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 #constants
 inch = 0.0254
 lbs = 0.453592
@@ -17,12 +19,21 @@ fuelused = [i * lbs for i in fuelused]
 tablefuelmass = [1700,1800,1900,2000,2100,2200,2300,2400] #lbs
 tablefuelmoment = [485656,514116,542564,570990,599404,627847,656282,684696]
 currentfuel = [mfuelstart/lbs - i/lbs for i in fuelused]
-cg = []
 
 #Definitions
 
 def momentfuel(currentfuel,lowfuel,highfuel,lowmoment,highmoment):
     return lowmoment + (currentfuel-lowfuel)/(highfuel-lowfuel)*(highmoment-lowmoment)
+
+def cgloc(totalmass, currentfuel, totalmoment, fuelmoment):
+    cg = []
+    for l in range(len(totalmoment)):
+        totalmass[l] = totalmass[l] + currentfuel[l]
+        totalmoment[l] = totalmoment[l] + fuelmoment[l]
+
+    for k in range(len(totalmoment)):
+        cg.append(totalmoment[k] / totalmass[k] / 9.81)
+    return cg
 
 #Calculations
 
@@ -37,11 +48,11 @@ for i in range(len(currentfuel)):
         if currentfuel[i]/lbs >= tablefuelmass[j] and currentfuel[i]/lbs <= tablefuelmass[j+1]:
             fuelmoment.append((momentfuel(currentfuel[i]/lbs,tablefuelmass[j],tablefuelmass[j+1],tablefuelmoment[j],\
                                           tablefuelmoment[j+1]))*lbsinch)
+cgrange = cgloc(totalmass,currentfuel,totalmoment,fuelmoment)
+print("totalmoment: ",totalmoment,"totalmass: ",totalmass,"cg: ",cgrange)
+print("fuelmoment: ",fuelmoment)
 
-for l in range(len(totalmoment)):
-    totalmass[l] = totalmass[l] + currentfuel[l]
-    totalmoment[l] = totalmoment[l] + fuelmoment[l]
-
-for k in range(len(totalmoment)):
-    cg.append(totalmoment[k]/totalmass[k]/9.81)
-print("totalmoment: ",totalmoment,"totalmass: ",totalmass,"cg: ",cg)
+plt.plot(totalmass,cgrange)
+plt.xlabel("Current mass of the aircraft in kg")
+plt.ylabel("Current center of gravity in m")
+plt.show()
